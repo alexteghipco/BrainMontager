@@ -1,4 +1,4 @@
-function [im,cont,m1,m2] = brainMontager(inFU,inFO,sls,uBin,uLim,uCmpNm,uThr,backClr,maskOF,oBin,oLim,oCmpNm,oThr,oAlpha,vAng,contr)
+function [im,cont,m1,m2] = brainMontager(inFU,inFO,sls,uBin,uLim,uCmpNm,uThr,backClr,maskOF,oBin,oLim,oCmpNm,oThr,oAlpha,vAng,contr,useRawLims)
 % Generates a montage of brains on a tile chart using an overlay and an
 % underlay. The underlay may be turned into a contour map (currently only
 % tested with 8mm and 4mm segmentation maps). 
@@ -15,16 +15,17 @@ function [im,cont,m1,m2] = brainMontager(inFU,inFO,sls,uBin,uLim,uCmpNm,uThr,bac
 % uLim: limits for the underlay colormap as a 1 x 2 vector
 %
 % uCmpNm: an internal matlab colormap, or the name of any other
-%       colormap redistributed with brainSurfer to use for the underlay: 'jet', parula, hsv, hot,
-%       cool, spring, summer, autumn, winter, gray, bone, copper, pink,
-%       lines, colorcube, prism, spectral, RdYlBu, RdGy, RdBu, PuOr, PRGn,
-%       PiYG, BrBG, YlOrRd, YlOrBr, YlGnBu, YlGn, Reds, RdPu, Purples,
-%       PuRd, PuBuGn, PuBu, OrRd, oranges, greys, greens, GnBu, BuPu, BuGn,
-%       blues, set3, set2, set1, pastel2, pastel1, paired, dark2, accent,
-%       inferno, plasma, vega10, vega20b, vega20c, viridis, thermal,
-%       haline, solar, ice, oxy, deep, dense, algae, matter, turbid, speed,
-%       amp, tempo, balance, delta, curl, phase, perceptually distinct
-%       (default is jet). 
+%       colormap redistributed with brainSurfer (or made by you according
+%       to brainSurfer friednly formats) to use for the underlay: 'jet',
+%       parula, hsv, hot, cool, spring, summer, autumn, winter, gray, bone,
+%       copper, pink, lines, colorcube, prism, spectral, RdYlBu, RdGy,
+%       RdBu, PuOr, PRGn, PiYG, BrBG, YlOrRd, YlOrBr, YlGnBu, YlGn, Reds,
+%       RdPu, Purples, PuRd, PuBuGn, PuBu, OrRd, oranges, greys, greens,
+%       GnBu, BuPu, BuGn, blues, set3, set2, set1, pastel2, pastel1,
+%       paired, dark2, accent, inferno, plasma, vega10, vega20b, vega20c,
+%       viridis, thermal, haline, solar, ice, oxy, deep, dense, algae,
+%       matter, turbid, speed, amp, tempo, balance, delta, curl, phase,
+%       perceptually distinct (default is jet).
 %       
 %       colormap can also be an l x 3 matrix of colors specifying a custom
 %       colormap
@@ -53,8 +54,13 @@ function [im,cont,m1,m2] = brainMontager(inFU,inFO,sls,uBin,uLim,uCmpNm,uThr,bac
 % superimposed. If false, overlay and underlay will both be plotted as they
 % are. 
 %
+% useRawLims: if true limits will be based on min and max of image. If
+% false, limits will be set to negative and positive of max value in image only if there are
+% both positive and negative values OR the limits will be zero and max value in image if there are no negative values
+% in the map.
+%
 % EXAMPLE CALL: [~,~,~,~] = brainMontager(structural.nii.gz,'functional.nii.gz',...
-% [],5,[],'gray',[],[1 1 1],true,1000,[],'jet',[],0.3,'ud',true);
+% [],5,[],'gray',[],[1 1 1],true,1000,[],'jet',[],0.3,'ud',true,false);
 %
 %
 % Outputs -------------------------------------------
@@ -104,6 +110,12 @@ else
         ulins=linspace(min(tmp.vol(:)),max(tmp.vol(:)),uBin);
     else
         ulins=linspace(-1*max(abs([min(tmp.vol(:)) max(tmp.vol(:))])),max(abs([min(tmp.vol(:)) max(tmp.vol(:))])),uBin);
+        
+        if ~useRawLims
+            ulins=linspace(-1*max(abs([min(tmp.vol(:)) max(tmp.vol(:))])),max(abs([min(tmp.vol(:)) max(tmp.vol(:))])),uBin);
+        else
+            ulins=linspace(min(tmp.vol(:)),max(tmp.vol(:)),uBin);
+        end
     end
 end
 
@@ -113,12 +125,17 @@ else
     if isempty(find(tmp2.vol < 0))
         olins=linspace(min(tmp2.vol(:)),max(tmp2.vol(:)),oBin);
     else
-        olins=linspace(-1*max(abs([min(tmp2.vol(:)) max(tmp2.vol(:))])),max(abs([min(tmp2.vol(:)) max(tmp2.vol(:))])),oBin);
+        if ~useRawLims
+            olins=linspace(-1*max(abs([min(tmp2.vol(:)) max(tmp2.vol(:))])),max(abs([min(tmp2.vol(:)) max(tmp2.vol(:))])),oBin);
+        else
+            olins=linspace(min(tmp2.vol(:)),max(tmp2.vol(:)),oBin);
+        end
     end
 end
 
 if contr
-    t = tiledlayout(5,5,'TileSpacing','tight','Padding','compact');
+    v1 = round(size(tmp.vol,3)/5);
+    t = tiledlayout(v1,round(size(tmp.vol,3)/5),'TileSpacing','tight','Padding','compact');
     for i = 1:size(tmp.vol,3)
         nexttile
         m = [min(tmp2.vol(:,:,i)) max(tmp2.vol(:,:,i))];
