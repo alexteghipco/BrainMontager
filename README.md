@@ -3,12 +3,18 @@ Make brain montages with and without outlines of segmentations. This is still a 
 
 Here is an example of output with contours:
 <br/>
-<img align="center" width="825" height="1000" src="https://i.imgur.com/T3iHSgs.png">
+<img align="center" width="900" height="1000" src="https://i.imgur.com/T3iHSgs.png">
 <br/>
 <br/>
 
 Here is an example of output without contours (same data):
 <br/>
-<img align="center" width="1000" height="825" src="https://i.imgur.com/2JXaoLV.png">
+<img align="center" width="1100" height="900" src="https://i.imgur.com/2JXaoLV.png">
+<br/>
+<br/>
+
+Another example with an ROI on higher-res non-segmented data (i.e., spm152.nii.gz). Note, for non-segmented maps, you should loop through the con output and change the LevelList to something appropriate for your data and faithful to wm/gm boundaries etc...
+<br/>
+<img align="center" width="800" height="1000" src="https://i.imgur.com/0oAau7U.png">
 <br/>
 <br/>
