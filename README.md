@@ -18,3 +18,11 @@ Another example with an ROI on higher-res non-segmented data (i.e., spm152.nii.g
 <img align="center" width="800" height="1000" src="https://i.imgur.com/0oAau7U.png">
 <br/>
 <br/>
+
+Editing the lineWidth in the contour maps can also help with images like the above which have a lot of sharp edges. For fun, this is a segmented version of spm152 but it typically shows the same kind of jagged edge artifacts at larger line widths: 
+<br/>
+<img align="center" width="900" height="1000" src="https://i.imgur.com/fJMHPoe.png">
+<br/>
+<br/>
+
+
