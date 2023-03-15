@@ -59,6 +59,8 @@ function [im,cont,m1,m2] = brainMontager(inFU,inFO,sls,uBin,uLim,uCmpNm,uThr,bac
 % both positive and negative values OR the limits will be zero and max value in image if there are no negative values
 % in the map.
 %
+% lvls: levels to keep for the contour map. Default is [0.5 1.5 2.5 3.5]
+%
 % EXAMPLE CALL: [~,~,~,~] = brainMontager(structural.nii.gz,'functional.nii.gz',...
 % [],5,[],'gray',[],[1 1 1],true,1000,[],'jet',[],0.3,'ud',true,false);
 %
@@ -82,6 +84,10 @@ if isempty(oAlpha)
    oAlpha = 0.3; 
 end
 
+%if isempty(lvls)
+    lvls = [0.5 1.5 2.5 3.5];
+%end
+
 if ~isempty(vAng)
     if strcmpi(vAng,'l')
         vAng2(1) = 180;
@@ -95,8 +101,8 @@ else
 end
 
 figure;
-tmp.vol = niftiread(inFU);
-tmp2.vol = niftiread(inFO);
+tmp.vol = double(niftiread(inFU));
+tmp2.vol = double(niftiread(inFO));
 if maskOF
     idx = find(tmp.vol == 0);
     tmp2.vol(idx) = 0;
@@ -132,14 +138,18 @@ else
         end
     end
 end
-
+if isempty(sls)
+    sls = 1:size(tmp.vol,3);
+end
+ 
 if contr
-    v1 = round(size(tmp.vol,3)/5);
-    t = tiledlayout(v1,round(size(tmp.vol,3)/5),'TileSpacing','tight','Padding','compact');
-    for i = 1:size(tmp.vol,3)
+    v1 = round(length(sls)/5);
+    v2 = ceil(length(sls)/v1);
+    t = tiledlayout(v1,v2,'TileSpacing','tight','Padding','compact');
+    for i = 1:length(sls)
         nexttile
-        m = [min(tmp2.vol(:,:,i)) max(tmp2.vol(:,:,i))];
-        im{i} = imshow(tmp2.vol(:,:,i),[min(m) max(m)]);
+        m = [min(tmp2.vol(:,:,sls(i))) max(tmp2.vol(:,:,sls(i)))];
+        im{i} = imshow(tmp2.vol(:,:,sls(i)),[min(m) max(m)]);
         [cMap,cData,cbData,ticks,tickLabels] = colormapper(im{i}.CData(:),'colorBins',oBin,'colormap',oCmpNm,'limits',[olins(1) olins(end)],'thresh',oThr);
         [a, b, uIdx] = unique(cData,'rows');
         modeIdx = mode(uIdx);
@@ -151,8 +161,8 @@ if contr
         cDatar = reshape(cData,[size(im{i}.CData,1),size(im{i}.CData,2),3]);
         im{i}.CData = cDatar;
         hold on
-        [~,cont{i}] = imcontour(tmp.vol(:,:,i));
-        cont{i}.LevelList = [0.5 1.5 2.5 3.5];
+        [~,cont{i}] = imcontour(tmp.vol(:,:,sls(i)));
+        cont{i}.LevelList = lvls;
         cont{i}.LineWidth = 4;
         cont{i}.LineColor = [0 0 0];
         if ~isempty(vAng2)
@@ -160,12 +170,7 @@ if contr
         end
     end
 else
-    if isempty(sls)
-        m1 = montage(tmp.vol,'DisplayRange',[min(ulins) max(ulins)]);
-    else
-        m1 = montage(tmp.vol,'DisplayRange',[min(ulins) max(ulins)],'Indices',sls);
-    end
-    
+    m1 = montage(tmp.vol,'DisplayRange',[min(ulins) max(ulins)],'Indices',sls);
     [cMap,cData,cbData,ticks,tickLabels] = colormapper(m1.CData(:),'colorBins',uBin,'colormap',uCmpNm,'limits',[ulins(1) ulins(end)],'thresh',uThr);
     [a, b, uIdx] = unique(cData,'rows');
     modeIdx = mode(uIdx);
@@ -177,13 +182,8 @@ else
     cDatar = reshape(cData,[size(m1.CData,1),size(m1.CData,2),3]);
     m1.CData = cDatar;
     hold on
-    
-    if isempty(sls)
-        m2 = montage(tmp2.vol,'DisplayRange',[olins(1) olins(end)]);
-    else
-        m2 = montage(tmp2.vol,'DisplayRange',[olins(1) olins(end)],'Indices',sls);
-    end
-    
+
+    m2 = montage(tmp2.vol,'DisplayRange',[olins(1) olins(end)],'Indices',sls);
     [cMap,cData,cbData,ticks,~] = colormapper(m2.CData(:),'colorBins',oBin,'colormap',oCmpNm,'limits',[olins(1) olins(end)],'thresh',oThr);
     [a, b, uIdx] = unique(cData,'rows');
     modeIdx = mode(uIdx);
