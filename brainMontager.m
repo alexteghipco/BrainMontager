@@ -77,9 +77,6 @@ im = []; cont = []; m1 = []; m2 = [];
 if isempty(backClr)
     backClr = [1 1 1];
 end
-if isempty(uCmpNm)
-    uCmpNm = 'gray';
-end
 if isempty(oAlpha)
    oAlpha = 0.3; 
 end
@@ -100,14 +97,54 @@ else
     vAng2 = [];
 end
 
-figure;
-tmp.vol = double(niftiread(inFU));
+if iscell(inFU)
+    l = length(inFU);
+else
+    l = 1;
+    inFU={inFU};
+end
+ 
+for i = 1:l
+    tmp.vol(:,:,:,i) = double(niftiread(inFU{i}));
+end
+
 tmp2.vol = double(niftiread(inFO));
 if maskOF
-    idx = find(tmp.vol == 0);
+    idx = unique(find(tmp.vol == 0));
     tmp2.vol(idx) = 0;
 end
-hold on
+
+if isempty(uCmpNm)
+    if contr
+        if l == 1
+            uCmpNm = 'gray';
+        else
+            uCmpNm = jet(l);
+        end
+    else
+        uCmpNm = 'gray';
+    end
+else
+    if contr
+        if l > 1
+            [uCmpNm,~,~,~,~] = colormapper([1:l],'colorBins',l,'colormap',uCmpNm);
+        else
+            uCmpNm = [0 0 0];
+        end
+    else
+        uCmpNm = 'gray';
+    end
+end
+
+% if isempty(contClr)
+%     if l == 1
+%         contClr = [0 0 0];
+%     else
+%         contClr = jet(l);
+%     end
+% else
+%     [contClr,~,~,~,~] = colormapper([1:l],'colorBins',l,'colormap',contClr);
+% end
 
 if ~isempty(uLim)
     ulins = linspace(min(uLim),max(uLim),uBin);
@@ -142,6 +179,8 @@ if isempty(sls)
     sls = 1:size(tmp.vol,3);
 end
  
+figure;
+hold on
 if contr
     v1 = round(length(sls)/5);
     v2 = ceil(length(sls)/v1);
@@ -160,13 +199,15 @@ if contr
         cData(idx,3) = backClr(3);
         cDatar = reshape(cData,[size(im{i}.CData,1),size(im{i}.CData,2),3]);
         im{i}.CData = cDatar;
-        hold on
-        [~,cont{i}] = imcontour(tmp.vol(:,:,sls(i)));
-        cont{i}.LevelList = lvls;
-        cont{i}.LineWidth = 4;
-        cont{i}.LineColor = [0 0 0];
-        if ~isempty(vAng2)
-            view(vAng2)
+        for j = 1:l
+            hold on
+            [~,cont{i,j}] = imcontour(tmp.vol(:,:,sls(i),j));
+            cont{i,j}.LevelList = lvls;
+            cont{i,j}.LineWidth = 4;
+            cont{i,j}.LineColor = uCmpNm(j,:);%[0 0 0];
+            if ~isempty(vAng2)
+                view(vAng2)
+            end
         end
     end
 else
