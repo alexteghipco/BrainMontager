@@ -25,4 +25,8 @@ Editing the lineWidth in the contour maps can also help with images like the abo
 <br/>
 <br/>
 
-
+Finally, you can flip the arguments to generate an outline over a normal T1 like so 
+<br/>
+<img align="center" width="900" height="700" src="https://i.imgur.com/GuiO8xo.png">
+<br/>
+<br/>
