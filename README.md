@@ -30,3 +30,9 @@ Finally, you can flip the arguments to generate an outline over a normal T1 like
 <img align="center" width="900" height="700" src="https://i.imgur.com/GuiO8xo.png">
 <br/>
 <br/>
+
+And if you pass in multiple underlays as a cell array they will all be outlined in different colors based on the colormap you've selected
+<br/>
+<img align="center" width="900" height="700" src="https://i.imgur.com/7NxlyGa.png">
+<br/>
+<br/>
